@@ -1,54 +1,55 @@
-<script setup>
-import { ref, reactive, watch, onMounted, defineProps } from 'vue';
-import loadingImg from '../assets/loading.svg';
+<script>
+import { ref, reactive } from 'vue';
+import loading from '../assets/loading.svg';
+export default {
+  props: {
+    selectedDate: String,
+  },
 
-const props = defineProps({
-  selectedDate: String,
-});
+  setup() {
+    const data = reactive({});
+    const loading = ref(true);
+    const success = ref(true);
 
-let data = reactive({});
-let loading = ref(true);
-let success = ref(true);
+    async function loadData() {
+      this.loading = true;
+      this.data.hdurl = loading;
+      await fetch(
+        `https://api.nasa.gov/planetary/apod?api_key=Ww0Xuo2kdnZyguPsJdummwwc7aW1I4M3XboVoHeY${
+          this.selectedDate ? '&date=' + this.selectedDate : ''
+        }`
+      )
+        .then(response => response.json())
+        .then(json => {
+          if (json.code == 400) {
+            this.loading = false;
+            this.success = false;
+            return;
+          }
 
-async function loadData() {
-  loading.value = true;
-  data.hdurl = loadingImg;
-
-  await fetch(
-    `https://api.nasa.gov/planetary/apod?api_key=Ww0Xuo2kdnZyguPsJdummwwc7aW1I4M3XboVoHeY${
-      props.selectedDate ? '&date=' + props.selectedDate : ''
-    }`
-  )
-    .then(response => response.json())
-    .then(json => {
-      if (json.code == 400) {
-        loading.value = false;
-        success.value = false;
-        return;
-      }
-      data = json;
-      success.value = true;
-      loading.value = false;
-    });
-}
-
-watch(
-  () => props.selectedDate,
-  async newValue => {
-    const date = new Date(newValue);
-    if (
-      date.valueOf() != NaN &&
-      date.getFullYear() > 1994 &&
-      date.getFullYear() < new Date().getFullYear()
-    ) {
-      loadData();
+          this.data = json;
+          this.success = true;
+          this.loading = false;
+        });
     }
-  }
-);
+  },
+  watch: {
+    selectedDate(newValue) {
+      const date = new Date(newValue);
+      if (
+        date.valueOf() != NaN &&
+        date.getFullYear() > 1994 &&
+        date.getFullYear() < new Date().getFullYear()
+      ) {
+        this.loadData();
+      }
+    },
+  },
 
-onMounted(() => {
-  loadData();
-});
+  mounted() {
+    this.loadData();
+  },
+};
 </script>
 
 <template>
