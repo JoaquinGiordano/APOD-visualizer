@@ -1,14 +1,8 @@
-<script>
+<script setup>
+import { ref } from 'vue';
 import APODContainer from '../components/APODContainer.vue';
 
-export default {
-  components: {
-    APODContainer,
-  },
-  data() {
-    return { selectedDate: null };
-  },
-};
+let selectedDate = ref(null);
 </script>
 
 <template>

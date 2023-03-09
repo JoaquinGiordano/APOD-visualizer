@@ -1,55 +1,49 @@
-<script>
-import { ref, reactive } from 'vue';
-import loading from '../assets/loading.svg';
-export default {
-  props: {
-    selectedDate: String,
-  },
-
-  setup() {
-    const data = reactive({});
-    const loading = ref(true);
-    const success = ref(true);
-
-    async function loadData() {
-      this.loading = true;
-      this.data.hdurl = loading;
-      await fetch(
-        `https://api.nasa.gov/planetary/apod?api_key=Ww0Xuo2kdnZyguPsJdummwwc7aW1I4M3XboVoHeY${
-          this.selectedDate ? '&date=' + this.selectedDate : ''
-        }`
-      )
-        .then(response => response.json())
-        .then(json => {
-          if (json.code == 400) {
-            this.loading = false;
-            this.success = false;
-            return;
-          }
-
-          this.data = json;
-          this.success = true;
-          this.loading = false;
-        });
-    }
-  },
-  watch: {
-    selectedDate(newValue) {
-      const date = new Date(newValue);
-      if (
-        date.valueOf() != NaN &&
-        date.getFullYear() > 1994 &&
-        date.getFullYear() < new Date().getFullYear()
-      ) {
-        this.loadData();
+<script setup>
+import { ref, reactive, watch, onMounted } from 'vue';
+import loadingImg from '../assets/loading.svg';
+const props = defineProps({
+  selectedDate: String,
+});
+let data = reactive({});
+let loading = ref(true);
+let success = ref(true);
+async function loadData() {
+  loading.value = true;
+  data.hdurl = loadingImg;
+  await fetch(
+    `https://api.nasa.gov/planetary/apod?api_key=Ww0Xuo2kdnZyguPsJdummwwc7aW1I4M3XboVoHeY${
+      props.selectedDate ? '&date=' + props.selectedDate : ''
+    }`
+  )
+    .then(response => response.json())
+    .then(json => {
+      if (json.code == 400) {
+        loading.value = false;
+        success.value = false;
+        return;
       }
-    },
-  },
 
-  mounted() {
-    this.loadData();
-  },
-};
+      Object.assign(data, data, json);
+      success.value = true;
+      loading.value = false;
+    });
+}
+watch(
+  () => props.selectedDate,
+  async newValue => {
+    const date = new Date(newValue);
+    if (
+      date.valueOf() != NaN &&
+      date.getFullYear() > 1994 &&
+      date.getFullYear() < new Date().getFullYear()
+    ) {
+      loadData();
+    }
+  }
+);
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <template>
@@ -75,7 +69,6 @@ export default {
   display: flex;
   border-radius: 10px;
 }
-
 .error-message {
   width: 100%;
   height: 100%;
@@ -87,7 +80,6 @@ export default {
   width: 500px;
   text-align: center;
 }
-
 .info-container {
   display: flex;
   flex-direction: column;
@@ -103,7 +95,6 @@ export default {
   color: #7c7c7c;
   text-align: justify;
 }
-
 #apod-img {
   border-radius: 10px;
   height: 350px;
