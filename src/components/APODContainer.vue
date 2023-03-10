@@ -32,10 +32,11 @@ watch(
   () => selectedDate.value,
   async newValue => {
     const date = new Date(newValue);
+    const actualDate = new Date();
     if (
       date.valueOf() != NaN &&
-      date.getFullYear() > 1994 &&
-      date.getFullYear() < new Date().getFullYear()
+      date >= new Date('1995-07-01') &&
+      date <= actualDate
     ) {
       loadData();
     }
